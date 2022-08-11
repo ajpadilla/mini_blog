@@ -34,6 +34,12 @@ Para que el miniblog funcione debes crear las siguientes variables de entorno:
 > Mi recomendación para las pruebas es que añadas esas variables en el fichero "activate" o "activate.bat"
 > si estás usando virtualenv
  
+
+### Crear y agregar archivo .env
+
+APP_SETTINGS_MODULE=config.local
+FLASK_ENV=development
+
 ### Instalación de dependencias
 
 En el proyecto se distribuye un fichero (requirements.txt) con todas las dependencias. Para instalarlas
