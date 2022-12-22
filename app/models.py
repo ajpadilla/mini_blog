@@ -1,10 +1,10 @@
 import datetime
-
 from flask import url_for
 from slugify import slugify
 from sqlalchemy.exc import IntegrityError
 
 from app import db
+
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -14,7 +14,10 @@ class Post(db.Model):
     context = db.Column(db.Text)
     created = db.Column(db.DateTime, default=datetime.datetime.utcnow())
     image_name = db.Column(db.String)
-    comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan', order_by='asc(Comment.created)')
+
+    #Relacion uno a muchos 1 post tiene muchos comentarios
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan',
+                               order_by='asc(Comment.created)')
 
     def __repr__(self):
         return f'<Post> {self.title}'
@@ -55,7 +58,7 @@ class Post(db.Model):
 
     @staticmethod
     def all_paginated(page=1, per_page=20):
-        return Post.query.order_by(Post.created.asc()).\
+        return Post.query.order_by(Post.created.asc()). \
             paginate(page=page, per_page=per_page, error_out=False)
 
 

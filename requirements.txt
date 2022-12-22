@@ -33,3 +33,5 @@ tomli==2.0.1
 Werkzeug==2.0.2
 WTForms==3.0.1
 zipp==3.7.0
+
+marshmallow~=3.17.1

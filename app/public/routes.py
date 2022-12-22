@@ -12,13 +12,14 @@ from ..common.mail import send_email
 
 logger = logging.getLogger(__name__)
 
+
 @public_bp.route("/mesagges/")
 def message_email():
-
     msg = Message('Hello', sender=("Juanjo", "juanjo@j2logo.com"), recipients=['ajpadilla88@gmail.com'])
     msg.body = "This is the email body"
     mail.send(msg)
     return 'OK'
+
 
 @public_bp.route("/")
 def index():

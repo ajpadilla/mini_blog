@@ -3,6 +3,7 @@ import logging
 from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_mail import Mail, Message
+from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from logging.handlers import SMTPHandler
@@ -10,9 +11,11 @@ from logging.handlers import SMTPHandler
 from app.common.filters import format_datetime
 
 login_manager = LoginManager()
+ma = Marshmallow()
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
+
 
 def create_app(settings_module):
     app = Flask(__name__, instance_relative_config=True)
@@ -32,9 +35,9 @@ def create_app(settings_module):
 
     db.init_app(app)
     migrate.init_app(app, db)
+    ma.init_app(app)
     mail.init_app(app)
     register_filters(app)
-
 
     # Registro de los Blueprints
     from .auth import auth_bp
@@ -46,16 +49,20 @@ def create_app(settings_module):
     from .public import public_bp
     app.register_blueprint(public_bp)
 
+    from .product.resources import product_v1_0_bp
+    app.register_blueprint(product_v1_0_bp)
+
     # Custom error handlers
     register_error_handlers(app)
 
     return app
 
+
 def register_filters(app):
     app.jinja_env.filters['datetime'] = format_datetime
 
-def register_error_handlers(app):
 
+def register_error_handlers(app):
     @app.errorhandler(500)
     def base_error_handler(e):
         return render_template('500.html'), 500
@@ -70,19 +77,19 @@ def register_error_handlers(app):
 
 
 def configure_logging(app):
-    #app.logger.debug(f'settings_module: {app.config}')
+    # app.logger.debug(f'settings_module: {app.config}')
 
     del app.logger.handlers[:]
 
-    loggers = [app.logger,]
+    loggers = [app.logger, ]
     handlers = []
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(verbose_formatter())
 
-    if(app.config['APP_ENV'] == app.config['APP_ENV_LOCAL']) or (
+    if (app.config['APP_ENV'] == app.config['APP_ENV_LOCAL']) or (
             app.config['APP_ENV'] == app.config['APP_ENV_TESTING']) or (
-        app.config['APP_ENV'] == app.config['APP_ENV_DEVELOPMENT']):
+            app.config['APP_ENV'] == app.config['APP_ENV_DEVELOPMENT']):
         console_handler.setLevel(logging.DEBUG)
         handlers.append(console_handler)
     elif app.config['APP_ENV'] == app.config['APP_ENV_PRODUCTION']:
@@ -100,11 +107,12 @@ def configure_logging(app):
     mail_handler.setFormatter(mail_handler_formatter())
     handlers.append(mail_handler)
 
-    for l in  loggers:
+    for l in loggers:
         for handler in handlers:
             l.addHandler(handler)
         l.propagate = False
         l.setLevel(logging.DEBUG)
+
 
 def mail_handler_formatter():
     return logging.Formatter(
@@ -121,6 +129,7 @@ def mail_handler_formatter():
         ''',
         datefmt='%d/%m/%Y %H:%M:%S'
     )
+
 
 def verbose_formatter():
     return logging.Formatter(
